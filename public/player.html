@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incognito Video Player & Streamer</title>
+    <style>
+        * { margin: 0; padding: 0; overflow: hidden; box-sizing: border-box; }
+        html, body { 
+            width: 100%; 
+            height: 100%; 
+            background: #020617; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            color: #f1f5f9;
+        }
+        
+        iframe { 
+            width: 100%; 
+            height: 100%; 
+            border: none; 
+            background: #000;
+        }
+        
+        /* Floating Glassmorphism Control Bar */
+        #top-bar {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 8px 16px;
+            border-radius: 9999px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 20px rgba(168, 85, 247, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            max-width: 90%;
+            width: max-content;
+        }
+
+        #top-bar:hover {
+            background: rgba(15, 23, 42, 0.9);
+            border-color: rgba(168, 85, 247, 0.3);
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6), 0 0 30px rgba(168, 85, 247, 0.25);
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-family: monospace;
+        }
+
+        .status-proxy {
+            background: rgba(236, 72, 153, 0.15);
+            color: #f472b6;
+            border: 1px solid rgba(236, 72, 153, 0.25);
+        }
+
+        .status-direct {
+            background: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+            border: 1px solid rgba(99, 102, 241, 0.25);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-proxy .status-dot { background-color: #ec4899; }
+        .status-direct .status-dot { background-color: #6366f1; }
+
+        @keyframes pulse {
+            0% { transform: scale(0.9); opacity: 0.6; }
+            50% { transform: scale(1.15); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.6; }
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            padding: 6px 12px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, #4f46e5 0%, #c026d3 100%);
+            border: none;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(192, 38, 211, 0.25);
+        }
+
+        .action-btn.primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(192, 38, 211, 0.4);
+            filter: brightness(1.1);
+        }
+
+        /* Error & Blocked State Overlay */
+        #error-container {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, #090d16 0%, #050510 100%);
+            color: #f1f5f9;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2.5rem;
+            z-index: 50;
+        }
+
+        .error-card {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 2.5rem;
+            border-radius: 32px;
+            max-width: 480px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 50px rgba(168, 85, 247, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(15px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .icon { 
+            font-size: 3rem; 
+            margin-bottom: 1.25rem;
+            filter: drop-shadow(0 0 10px rgba(236, 72, 153, 0.4));
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        h1 { 
+            font-size: 1.5rem; 
+            font-weight: 900; 
+            margin-bottom: 0.75rem; 
+            color: #fff; 
+            letter-spacing: -0.025em;
+            text-transform: uppercase;
+        }
+
+        p { 
+            font-size: 0.85rem; 
+            color: #94a3b8; 
+            line-height: 1.6; 
+            margin-bottom: 2rem;
+        }
+
+        .error-actions {
+            display: flex;
+            flex-direction: column;
+            sm-flex-direction: row;
+            gap: 10px;
+            width: 100%;
+            justify-content: center;
+        }
+        
+        /* Loader */
+        .loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(168, 85, 247, 0.1);
+            border-top-color: #a855f7;
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.55, 0.055, 0.675, 0.19) infinite;
+            z-index: 10;
+        }
+        
+        @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+        /* Custom alert message */
+        #alert-tip {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(244, 63, 94, 0.15);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            color: #fda4af;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 9999px;
+            z-index: 90;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            pointer-events: none;
+            animation: fadeIn 0.5s ease-out;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translate(-50%, 5px); } to { opacity: 1; transform: translate(-50%, 0); } }
+    </style>
+</head>
+<body>
+    <div id="loader" class="loader"></div>
+
+    <!-- Modern Floating Controller -->
+    <div id="top-bar">
+        <div id="proxy-status" class="status-badge status-direct">
+            <span class="status-dot"></span>
+            <span id="status-text">Directo</span>
+        </div>
+        
+        <button onclick="toggleProxy()" id="btn-toggle-proxy" class="action-btn" title="Alternar modo de conexión seguro">
+            🔄 Usar Proxy
+        </button>
+
+        <a id="btn-tab" href="#" target="_blank" class="action-btn primary" title="Abrir en ventana completa para evitar bloqueos">
+            🚀 Pestaña Completa ↗️
+        </a>
+
+        <button onclick="togglePopout()" class="action-btn" title="Popout flotante">
+            📺 Popout
+        </button>
+    </div>
+
+    <!-- Dynamic Tip for users -->
+    <div id="alert-tip">
+        ⚠️ Si la pantalla queda en negro, haz clic en <strong>"Usar Proxy"</strong> o <strong>"Pestaña Completa"</strong> arriba.
+    </div>
+
+    <!-- Beautiful Error Overlay -->
+    <div id="error-container">
+        <div class="error-card">
+            <div class="icon">🎬</div>
+            <h1 id="error-title">Transmisión Protegida</h1>
+            <p id="error-desc">El proveedor de este video (SpankBang, xHamster, etc.) bloquea la reproducción directa dentro del chat por políticas de seguridad del navegador.</p>
+            <div class="error-actions">
+                <button onclick="forceProxyBypass()" class="action-btn primary" style="padding: 10px 20px;">
+                    🛡️ Activar Safe Proxy
+                </button>
+                <a id="error-direct-link" href="#" target="_blank" class="action-btn" style="padding: 10px 20px; justify-content: center;">
+                    🚀 Ver Online (Pestaña Nueva)
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Secure Sandboxed Player -->
+    <iframe id="player" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"></iframe>
+    
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const rawUrl = urlParams.get('url');
+        const player = document.getElementById('player');
+        const loader = document.getElementById('loader');
+        const errorContainer = document.getElementById('error-container');
+        const alertTip = document.getElementById('alert-tip');
+        const btnTab = document.getElementById('btn-tab');
+        const errorDirectLink = document.getElementById('error-direct-link');
+        const proxyStatus = document.getElementById('proxy-status');
+        const statusText = document.getElementById('status-text');
+        const btnToggleProxy = document.getElementById('btn-toggle-proxy');
+        
+        let isProxyActive = urlParams.get('proxy') === 'true';
+        let originalVideoUrl = rawUrl ? decodeURIComponent(rawUrl) : '';
+
+        // Configure links
+        if (originalVideoUrl) {
+            btnTab.href = originalVideoUrl;
+            errorDirectLink.href = originalVideoUrl;
+        }
+
+        function updateUIState() {
+            if (isProxyActive) {
+                proxyStatus.className = 'status-badge status-proxy';
+                statusText.innerText = 'Proxy Activo';
+                btnToggleProxy.innerHTML = '🌐 Usar Conexión Directa';
+                btnToggleProxy.style.borderColor = 'rgba(236, 72, 153, 0.3)';
+            } else {
+                proxyStatus.className = 'status-badge status-direct';
+                statusText.innerText = 'Directo';
+                btnToggleProxy.innerHTML = '🔄 Usar Proxy';
+                btnToggleProxy.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+            }
+        }
+
+        function loadVideo() {
+            if (!originalVideoUrl) {
+                showNoUrlError();
+                return;
+            }
+
+            loader.style.display = 'block';
+            
+            if (isProxyActive) {
+                player.src = `/api/proxy?url=${encodeURIComponent(originalVideoUrl)}`;
+            } else {
+                player.src = originalVideoUrl;
+            }
+
+            updateUIState();
+
+            // Set a timer to check if it's taking too long (potential frame blocks)
+            const fallbackTimer = setTimeout(() => {
+                // If it's still loading or stuck on a blank frame, we show the bypass helper options
+                if (loader.style.display !== 'none' && !isProxyActive) {
+                    loader.style.display = 'none';
+                    errorContainer.style.display = 'flex';
+                }
+            }, 6000);
+
+            player.onload = () => {
+                clearTimeout(fallbackTimer);
+                loader.style.display = 'none';
+                // If loaded, keep alert hidden after a few seconds
+                setTimeout(() => {
+                    if (alertTip) alertTip.style.opacity = '0';
+                }, 4000);
+            };
+        }
+
+        function toggleProxy() {
+            isProxyActive = !isProxyActive;
+            
+            // Re-load the video with the new proxy state
+            const currentParams = new URLSearchParams(window.location.search);
+            currentParams.set('proxy', isProxyActive.toString());
+            
+            // Push state or update location query gracefully
+            window.history.replaceState({}, '', `${window.location.pathname}?${currentParams.toString()}`);
+            loadVideo();
+        }
+
+        function forceProxyBypass() {
+            isProxyActive = true;
+            errorContainer.style.display = 'none';
+            toggleProxy(); // Will turn proxy on and load
+        }
+
+        function togglePopout() {
+            window.open(window.location.href, '_blank', 'width=1280,height=720,scrollbars=no,resizable=yes');
+        }
+
+        function showNoUrlError() {
+            loader.style.display = 'none';
+            errorContainer.style.display = 'flex';
+            document.getElementById('error-title').innerText = 'Falta el enlace';
+            document.getElementById('error-desc').innerText = 'Por favor selecciona una transmisión activa o ingresa un enlace embed válido en el panel.';
+            btnTab.style.display = 'none';
+            btnToggleProxy.style.display = 'none';
+        }
+
+        // Initialize
+        loadVideo();
+    </script>
+</body>
+</html>
