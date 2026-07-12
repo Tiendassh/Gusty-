@@ -2178,6 +2178,21 @@ export default function AnonymousChatApp() {
             >
               Iniciar Chat Incógnito
             </button>
+
+            {/* Telegram Community Button on Login */}
+            <div className="pt-2 border-t border-slate-900/50 mt-4">
+              <a
+                href="https://t.me/nocturnalpos"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-2xl border border-sky-500/20 bg-sky-500/5 hover:bg-sky-500/10 text-sky-400 font-bold transition-all hover:scale-[1.01] active:scale-[0.99] text-xs cursor-pointer"
+              >
+                <svg className="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.69-.52.36-1 .53-1.42.52-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.42-.88.03-.24.35-.49.97-.74 3.79-1.64 6.32-2.73 7.59-3.26 3.61-1.5 4.36-1.76 4.85-1.77.11 0 .35.03.5.16.13.12.17.29.18.41-.01.07-.01.15-.02.21z"/>
+                </svg>
+                <span>Únete al Telegram Oficial</span>
+              </a>
+            </div>
           </div>
 
           {/* Right panel: Active Portal Content (Tabs for Chat, Debates, Photos) */}
@@ -3152,6 +3167,20 @@ export default function AnonymousChatApp() {
               </>
             )}
           </button>
+
+          {/* Telegram Community Button */}
+          <a
+            href="https://t.me/nocturnalpos"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 py-1.5 px-3 rounded-2xl border border-sky-500/30 bg-sky-500/10 text-sky-400 hover:text-sky-300 text-xs font-bold transition-all hover:bg-sky-500/20 hover:scale-[1.02] cursor-pointer"
+            title="Únete a nuestro Telegram oficial"
+          >
+            <svg className="w-3.5 h-3.5 fill-current shrink-0" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.69-.52.36-1 .53-1.42.52-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.42-.88.03-.24.35-.49.97-.74 3.79-1.64 6.32-2.73 7.59-3.26 3.61-1.5 4.36-1.76 4.85-1.77.11 0 .35.03.5.16.13.12.17.29.18.41-.01.07-.01.15-.02.21z"/>
+            </svg>
+            <span className="hidden lg:inline">Telegram</span>
+          </a>
 
           {/* User profile card */}
           <div className="flex items-center gap-2 border border-slate-800/80 bg-slate-900/50 py-1.5 px-3.5 rounded-2xl">
@@ -6552,6 +6581,40 @@ export default function AnonymousChatApp() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Floating Telegram Widget */}
+      <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-2 group">
+        <div className="bg-slate-900/95 backdrop-blur-cyber border border-sky-500/30 rounded-2xl p-3 shadow-2xl max-w-xs transition-all duration-300 opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 flex flex-col gap-1.5">
+          <p className="text-[10px] font-black text-sky-400 uppercase tracking-widest flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-ping" />
+            Comunidad Nocturnal
+          </p>
+          <p className="text-[10px] text-slate-300 leading-normal">
+            Únete a nuestro grupo oficial para recibir novedades, promociones, soporte y chatear con otros miembros.
+          </p>
+          <a
+            href="https://t.me/nocturnalpos"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[9px] font-extrabold uppercase tracking-wider text-slate-950 bg-sky-400 hover:bg-sky-300 py-1.5 px-3 rounded-xl transition-all text-center block"
+          >
+            Entrar al Canal
+          </a>
+        </div>
+        <a
+          href="https://t.me/nocturnalpos"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-11 h-11 bg-gradient-to-tr from-sky-500 to-indigo-600 text-white rounded-full flex items-center justify-center shadow-lg shadow-sky-500/20 hover:shadow-sky-500/40 transition-all hover:scale-110 active:scale-95 relative cursor-pointer"
+          title="Comunidad Oficial de Telegram"
+        >
+          {/* Pulsating background ring */}
+          <span className="absolute inset-0 rounded-full bg-sky-500/20 animate-ping" />
+          <svg className="w-5 h-5 fill-current relative z-10" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.69-.52.36-1 .53-1.42.52-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.42-.88.03-.24.35-.49.97-.74 3.79-1.64 6.32-2.73 7.59-3.26 3.61-1.5 4.36-1.76 4.85-1.77.11 0 .35.03.5.16.13.12.17.29.18.41-.01.07-.01.15-.02.21z"/>
+          </svg>
+        </a>
+      </div>
 
     </div>
   );
