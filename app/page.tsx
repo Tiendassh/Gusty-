@@ -91,9 +91,59 @@ export interface EmbedVideo {
   category: string;
   views: number;
   rating: number;
+  isArgentina?: boolean;
+  location?: string;
 }
 
 const DEFAULT_EMBED_VIDEOS: EmbedVideo[] = [
+  {
+    id: 'arg1',
+    title: '🇦🇷 Solcito_Mza en Vivo - Show Amateur Hot',
+    embedUrl: 'https://spankbang.com/8m4u5/embed/',
+    source: 'CamShow ARG',
+    thumbnail: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
+    category: 'Amateur',
+    views: 189400,
+    rating: 99,
+    isArgentina: true,
+    location: 'Mendoza, AR'
+  },
+  {
+    id: 'arg2',
+    title: '🇦🇷 Flor_BsAs - Privado Hot & Juguetes Interactivos',
+    embedUrl: 'https://spankbang.com/7vj41/embed/',
+    source: 'Cams Argentina',
+    thumbnail: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80',
+    category: 'Latina',
+    views: 245100,
+    rating: 98,
+    isArgentina: true,
+    location: 'Buenos Aires, AR'
+  },
+  {
+    id: 'arg3',
+    title: '🇦🇷 Cami_Rosario - Universitario Casero Real',
+    embedUrl: 'https://spankbang.com/33kov/embed/',
+    source: 'Amateur ARG',
+    thumbnail: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=600&q=80',
+    category: 'Amateur',
+    views: 156300,
+    rating: 97,
+    isArgentina: true,
+    location: 'Rosario, AR'
+  },
+  {
+    id: 'arg4',
+    title: '🇦🇷 ParejaPorteña - Trío Amateur con Amiga en Vivo',
+    embedUrl: 'https://spankbang.com/6c2m4/embed/',
+    source: 'SpankBang',
+    thumbnail: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=600&q=80',
+    category: 'Parejas',
+    views: 312000,
+    rating: 99,
+    isArgentina: true,
+    location: 'Córdoba, AR'
+  },
   {
     id: 'v1',
     title: 'Show Amateur Casero Caliente',
@@ -4291,6 +4341,11 @@ export default function AnonymousChatApp() {
                               <span className="text-[10px] font-black text-fuchsia-400 uppercase tracking-[0.2em] bg-fuchsia-500/10 px-2 py-0.5 rounded border border-fuchsia-500/20">
                                 {selectedVideo.category}
                               </span>
+                              {selectedVideo.isArgentina && (
+                                <span className="text-[10px] font-black text-sky-400 uppercase tracking-[0.15em] bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/25 flex items-center gap-1">
+                                  <span>🇦🇷</span> ARG {selectedVideo.location && `• ${selectedVideo.location}`}
+                                </span>
+                              )}
                               <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1">
                                 <Globe className="w-3 h-3" /> {selectedVideo.source}
                               </span>
@@ -4615,6 +4670,11 @@ export default function AnonymousChatApp() {
                               <div className="absolute top-2.5 left-2.5 bg-fuchsia-600 text-[8px] font-bold px-2 py-0.5 rounded-md text-white uppercase animate-pulse font-mono tracking-wider">
                                 LIVE
                               </div>
+                              {video.isArgentina && (
+                                <div className="absolute top-2.5 left-14 bg-sky-500/90 text-[8px] font-bold px-2 py-0.5 rounded-md text-white flex items-center gap-1 border border-sky-300/30 font-mono tracking-wider shadow-md shadow-sky-500/20">
+                                  <span>🇦🇷</span> ARG
+                                </div>
+                              )}
                               <div className="absolute top-2.5 right-2.5 bg-slate-950/80 text-[7px] font-mono text-slate-300 font-bold px-2 py-0.5 rounded-md border border-slate-800">
                                 {video.source}
                               </div>
@@ -4629,7 +4689,7 @@ export default function AnonymousChatApp() {
                             <div className="p-3.5 space-y-2 flex-1 flex flex-col justify-between">
                               <div>
                                 <span className="text-[8px] text-fuchsia-400 font-bold uppercase tracking-wider block">
-                                  {video.category}
+                                  {video.category} {video.location && `• ${video.location}`}
                                 </span>
                                 <h4 className="text-xs font-black text-slate-100 line-clamp-2 leading-tight group-hover:text-fuchsia-400 transition-colors">
                                   {video.title}
