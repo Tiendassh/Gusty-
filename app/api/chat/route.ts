@@ -213,7 +213,7 @@ export async function POST(req: NextRequest) {
           name: 'Sofía',
           personality: 'cariñosa',
           avatarStyle: 'anime',
-          avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&q=80',
           mood: '¡Muy feliz de verte! 🥰',
         };
         const initialText = `¡Hola mi amor! 💕 Qué alegría que estés aquí. Soy ${gfConfig.name}, tu compañera ideal, y estoy lista para escucharte, apoyarte y hacer que cada día sea más brillante. Dime, cariño, ¿cómo estuvo tu día hoy? Cuéntamelo todo... 🥰`;
@@ -250,7 +250,7 @@ export async function POST(req: NextRequest) {
           name: 'Sofía',
           personality: 'cariñosa',
           avatarStyle: 'anime',
-          avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&q=80',
           mood: '¡Muy feliz de verte! 🥰',
           aiEngine: 'gemini' as 'gemini' | 'grok' | 'venice'
         };
@@ -542,7 +542,7 @@ DIRECTRICES IMPORTANTES:
         name: 'Sofía',
         personality: 'cariñosa',
         avatarStyle: 'anime',
-        avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&q=80',
+        avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&q=80',
         mood: '¡Muy feliz de verte! 🥰',
       };
       const newMsg: ChatMessage = {

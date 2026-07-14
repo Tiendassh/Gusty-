@@ -5276,7 +5276,7 @@ export default function AnonymousChatApp() {
                               {/* Colored dot or girlfriend avatar representation */}
                               {msg.senderId === 'girlfriend' ? (
                                 <img
-                                  src={girlfriendConfig?.avatarUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&q=80'}
+                                  src={girlfriendConfig?.avatarUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&q=80'}
                                   alt={msg.senderName}
                                   className="w-7 h-7 rounded-full shrink-0 border border-rose-500/40 object-cover select-none shadow"
                                   referrerPolicy="no-referrer"
@@ -5435,7 +5435,7 @@ export default function AnonymousChatApp() {
                             </div>
                           ) : null}
                           <img
-                            src={girlfriendConfig?.avatarUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&q=80'}
+                            src={girlfriendConfig?.avatarUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&q=80'}
                             alt={girlfriendConfig?.name || 'Novia'}
                             className="w-full h-full object-cover"
                             referrerPolicy="no-referrer"
@@ -5952,7 +5952,7 @@ export default function AnonymousChatApp() {
                       </div>
                     )}
                     <img
-                      src={girlfriendConfig?.avatarUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&q=80'}
+                      src={girlfriendConfig?.avatarUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&q=80'}
                       alt={girlfriendConfig?.name || 'Novia'}
                       className="w-full h-full object-cover"
                       referrerPolicy="no-referrer"
