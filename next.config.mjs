@@ -1,41 +1,33 @@
-
-
+/** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  // SOLUCIÓN: Cambiar directorio de salida a 'dist' (no está en .gitignore)
   distDir: 'dist',
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: false,
-  },
-  // Allow access to remote image placeholder.
+  
+  // Configuración para exportación estática (opcional, útil para Render)
+  output: 'standalone', // o 'export' si necesitas HTML estático
+  
+  // Permitir imágenes de cualquier dominio (ajusta según necesites)
   images: {
+    unoptimized: true, // Necesario para export estático
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'picsum.photos',
-        port: '',
-        pathname: '/**', // This allows any path under the hostname
-      },
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-        port: '',
-        pathname: '/**',
+        hostname: '**',
       },
     ],
   },
-  webpack: (config, {dev}) => {
-    // HMR is disabled in AI Studio via DISABLE_HMR env var.
-    // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
-    if (dev && process.env.DISABLE_HMR === 'true') {
-      config.watchOptions = {
-        ignored: /.*/,
-      };
-    }
-    return config;
+  
+  // Variables de entorno disponibles en el cliente
+  env: {
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
   },
-};
-
-export default nextConfig;
+  
+  // Headers CORS para el proxy de video
+  async headers() {
+    return [
+      {
+        source: '/api/:path*',
+        headers: [
+          { key: 'Access-Control-Allow-Credentials', value: 'true' },
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Methods', value: '
