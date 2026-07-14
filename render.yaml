@@ -13,4 +13,4 @@ services:
     # El directorio dist/ se generará automáticamente
 
 # Nota: No necesitas especificar el directorio de build aquí,
-// Render detecta automáticamente la configuración de Next.js
+# Render detecta automáticamente la configuración de Next.js
