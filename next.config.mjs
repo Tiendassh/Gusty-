@@ -1,12 +1,16 @@
 
 
 const nextConfig = {
+  distDir: 'dist',
   reactStrictMode: true,
   eslint: {
     ignoreDuringBuilds: true,
   },
   typescript: {
     ignoreBuildErrors: false,
+  },
+  experimental: {
+    serverComponentsExternalPackages: ['@google/genai'],
   },
   // Allow access to remote image placeholder.
   images: {
