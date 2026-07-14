@@ -232,8 +232,27 @@ export default function AnonymousChatApp() {
     const timer = setTimeout(() => {
       setMounted(true);
       setUserId('user_' + Math.random().toString(36).substring(2, 11));
-      setName(getRandomName());
-      setColor(avatarColors[Math.floor(Math.random() * avatarColors.length)]);
+
+      const storedName = localStorage.getItem('nocturnal_name');
+      const storedGender = localStorage.getItem('nocturnal_gender');
+      const storedAge = localStorage.getItem('nocturnal_age');
+      const storedColor = localStorage.getItem('nocturnal_color');
+      const storedOrientation = localStorage.getItem('nocturnal_orientation');
+      const storedHasEntered = localStorage.getItem('nocturnal_has_entered');
+
+      if (storedName) setName(storedName);
+      else setName(getRandomName());
+
+      if (storedColor) setColor(storedColor);
+      else setColor(avatarColors[Math.floor(Math.random() * avatarColors.length)]);
+
+      if (storedGender) setGender(storedGender);
+      if (storedAge) setAge(storedAge);
+      if (storedOrientation) setOrientation(storedOrientation);
+      if (storedHasEntered === 'true') {
+        setHasEntered(true);
+        setAgeConfirmed(true);
+      }
     }, 0);
     return () => clearTimeout(timer);
   }, []);
@@ -2167,11 +2186,17 @@ export default function AnonymousChatApp() {
               </div>
             </div>
 
-            <button
+             <button
               type="button"
               disabled={!ageConfirmed || !name.trim()}
               onClick={() => {
                 playInteractionMode('click');
+                localStorage.setItem('nocturnal_name', name);
+                localStorage.setItem('nocturnal_gender', gender);
+                localStorage.setItem('nocturnal_age', age);
+                localStorage.setItem('nocturnal_color', color);
+                localStorage.setItem('nocturnal_orientation', orientation);
+                localStorage.setItem('nocturnal_has_entered', 'true');
                 setHasEntered(true);
               }}
               className="w-full mt-4 bg-gradient-to-r from-rose-500 via-pink-500 to-indigo-600 text-white font-bold py-3 px-4 rounded-2xl cursor-pointer hover:shadow-lg hover:shadow-indigo-500/20 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all disabled:opacity-40 disabled:cursor-not-allowed uppercase text-xs tracking-widest"
