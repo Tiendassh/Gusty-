@@ -1,7 +1,36 @@
-node_modules/
-.next/
-coverage/
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# Next.js build outputs (ya no usamos .next para deploy)
+/.next/
+/out/
+
+# Testing
+/coverage
+
+# Environment variables
+.env*.local
+.env
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
 .DS_Store
-*.log
-.env*
-!.env.example
+Thumbs.db
+
+# NOTA: NO ignoramos /dist porque Render necesita esos archivos
+# Si quieres ignorarlo en git pero no en Render, usa:
+# /dist  # (descomenta solo si NO usas Render para deploy)
