@@ -704,7 +704,32 @@ export default function AnonymousChatApp() {
   // Text Chat States
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [messageInput, setMessageInput] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'rooms' | 'debates' | 'feed' | 'users' | 'calls' | 'grok-studio' | 'shows'>('rooms');
+  const [activeTab, setActiveTab] = useState<'rooms' | 'debates' | 'feed' | 'users' | 'calls' | 'grok-studio' | 'shows' | 'panel-streamer' | 'perfil-usuario'>('rooms');
+
+  // Streamer Panel States
+  const [isStreaming, setIsStreaming] = useState<boolean>(false);
+  const [streamTitle, setStreamTitle] = useState<string>('🔥 Transmisión en Vivo de ' + (name || 'Lobby User'));
+  const [streamCategory, setStreamCategory] = useState<string>('Amateur');
+  const [streamResolution, setStreamResolution] = useState<string>('1080p');
+  const [streamTokens, setStreamTokens] = useState<number>(0);
+  const [streamViewers, setStreamViewers] = useState<number>(0);
+  const [streamDuration, setStreamDuration] = useState<number>(0);
+  const [streamLikes, setStreamLikes] = useState<number>(0);
+  const [streamAccess, setStreamAccess] = useState<string>('Público');
+  const [streamPrice, setStreamPrice] = useState<number>(50);
+  const [streamMessages, setStreamMessages] = useState<{ id: string; sender: string; text: string; time: string; system?: boolean; gift?: boolean }[]>([]);
+  const streamTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const streamSimTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  // User Profile States
+  const [profileBio, setProfileBio] = useState<string>('Explorando salas de chat anónimas en busca de buenas conversaciones y diversión en tiempo real.');
+  const [profileWalletBalance, setProfileWalletBalance] = useState<number>(500);
+  const [profileLocation, setProfileLocation] = useState<string>('Argentina');
+  const [activeProfileTab, setActiveProfileTab] = useState<'wallet' | 'rooms' | 'badges' | 'settings'>('wallet');
+  const [purchaseAmount, setPurchaseAmount] = useState<number | null>(null);
+  const [showRechargeSuccess, setShowRechargeSuccess] = useState<boolean>(false);
 
   // Shows & Video Gallery States
   const [localVideos, setLocalVideos] = useState<EmbedVideo[]>(DEFAULT_EMBED_VIDEOS);
@@ -737,6 +762,124 @@ export default function AnonymousChatApp() {
     }, 1000);
     return () => clearInterval(interval);
   }, [viewOnceActiveMedia]);
+
+  // Streamer Camera & Simulation Effects
+  const setVideoElRef = useCallback((node: HTMLVideoElement | null) => {
+    videoRef.current = node;
+    if (node && localStream) {
+      node.srcObject = localStream;
+    }
+  }, [localStream]);
+
+  useEffect(() => {
+    const startCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        setLocalStream(stream);
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch (err) {
+        console.warn('No se pudo acceder a la cámara o micrófono:', err);
+      }
+    };
+
+    const stopCamera = () => {
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        setLocalStream(null);
+      }
+    };
+
+    if (isStreaming) {
+      startCamera();
+      
+      // Timer to increment duration
+      streamTimerRef.current = setInterval(() => {
+        setStreamDuration(prev => prev + 1);
+      }, 1000);
+
+      // Setup simulated user messages & stats
+      const randomUsers = [
+        'Gatita_Neko_92', 'Lobo_Siberiano_88', 'Luna_Estelar_42', 
+        'Cyborg_Luminoso_22', 'Fenix_Radiante_77', 'Vortex_Veloz_55', 
+        'Aura_Mistica_11', 'Zorro_Furtivo_34', 'Pantera_Neon_99'
+      ];
+      
+      const comments = [
+        '¡Wow, increíble transmisión! 😍',
+        '¿De qué parte de Argentina eres? 🇦🇷',
+        '¡Me encanta tu vibra! 💎',
+        '¿Haces shows privados de 1-a-1?',
+        '¡Te envié 10 tokens! 💸',
+        '¡Te ves espectacular! 🔥',
+        '¡Hola! Saludos a todos los de la sala 👋',
+        '¿Puedes compartir tu pantalla o poner música? 🎵',
+        '¡Envío un regalo de Súper Fan! 🎁',
+        '¿Cuánto cuesta un show privado?',
+        '¡Qué gran calidad de video!',
+        '¡Sigue así, tienes un nuevo seguidor!'
+      ];
+
+      setTimeout(() => {
+        setStreamViewers(Math.floor(Math.random() * 50) + 75);
+        setStreamLikes(Math.floor(Math.random() * 100) + 150);
+        setStreamMessages([
+          { 
+            id: '1', 
+            sender: 'Sistema', 
+            text: 'Transmisión iniciada de forma segura. El cifrado multimedia P2P está activo.', 
+            time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
+            system: true 
+          }
+        ]);
+      }, 0);
+
+      streamSimTimerRef.current = setInterval(() => {
+        // Adjust viewers count dynamically
+        setStreamViewers(prev => Math.max(5, prev + Math.floor(Math.random() * 11) - 5));
+        
+        // Add random likes
+        setStreamLikes(prev => prev + Math.floor(Math.random() * 12));
+
+        // Create a simulated chat message
+        const user = randomUsers[Math.floor(Math.random() * randomUsers.length)];
+        const text = comments[Math.floor(Math.random() * comments.length)];
+        const isGift = text.includes('tokens') || text.includes('regalo') || text.includes('🎁') || text.includes('💸');
+        
+        if (isGift) {
+          const addedTokens = text.includes('10 tokens') ? 10 : (text.includes('regalo') ? 50 : 25);
+          setStreamTokens(t => t + addedTokens);
+        }
+
+        setStreamMessages(prev => [
+          ...prev,
+          {
+            id: Math.random().toString(),
+            sender: user,
+            text,
+            time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+            gift: isGift
+          }
+        ].slice(-50)); // Limit scrollback to last 50 messages
+      }, 3500);
+
+    } else {
+      stopCamera();
+      if (streamTimerRef.current) clearInterval(streamTimerRef.current);
+      if (streamSimTimerRef.current) clearInterval(streamSimTimerRef.current);
+      setTimeout(() => {
+        setStreamDuration(0);
+        setStreamViewers(0);
+        setStreamLikes(0);
+      }, 0);
+    }
+
+    return () => {
+      if (streamTimerRef.current) clearInterval(streamTimerRef.current);
+      if (streamSimTimerRef.current) clearInterval(streamSimTimerRef.current);
+    };
+  }, [isStreaming]);
 
   const handleOpenViewOnceMessage = (messageId: string) => {
     fetch('/api/chat', {
@@ -962,7 +1105,6 @@ export default function AnonymousChatApp() {
   };
   
   // WebRTC & Call States
-  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [peer, setPeer] = useState<{ id: string; name: string; color?: string; age?: string; gender?: string } | null>(null);
   const [activeCall, setActiveCall] = useState<boolean>(false);
@@ -3207,15 +3349,45 @@ export default function AnonymousChatApp() {
             <span className="hidden lg:inline">Telegram</span>
           </a>
 
-          {/* User profile card */}
-          <div className="flex items-center gap-2 border border-slate-800/80 bg-slate-900/50 py-1.5 px-3.5 rounded-2xl">
+          {/* Streamer Panel Shortcut Button */}
+          <button
+            onClick={() => {
+              setActiveTab('panel-streamer');
+              setCurrentRoom(null);
+              playInteractionMode('click');
+            }}
+            className={`flex items-center gap-1.5 py-1.5 px-3 rounded-2xl border text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'panel-streamer'
+                ? 'bg-rose-500/10 border-rose-500 text-rose-400 font-extrabold shadow-md shadow-rose-500/5'
+                : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+            }`}
+            title="Panel de Streamer - Transmitir en Vivo"
+          >
+            <Tv className={`w-3.5 h-3.5 ${activeTab === 'panel-streamer' ? 'text-rose-500 animate-pulse' : 'text-slate-400'}`} />
+            <span className="hidden sm:inline">Transmitir 🎥</span>
+          </button>
+
+          {/* User profile card (Clickable to open profile settings) */}
+          <button
+            onClick={() => {
+              setActiveTab('perfil-usuario');
+              setCurrentRoom(null);
+              playInteractionMode('click');
+            }}
+            className={`flex items-center gap-2 border py-1.5 px-3.5 rounded-2xl transition-all cursor-pointer text-left ${
+              activeTab === 'perfil-usuario'
+                ? 'bg-indigo-500/10 border-indigo-500 text-indigo-400 shadow-md shadow-indigo-500/5'
+                : 'border-slate-800/80 bg-slate-900/50 hover:bg-slate-800/50 text-slate-200'
+            }`}
+            title="Mi Perfil y Billetera"
+          >
             <div 
               className="w-3.5 h-3.5 rounded-full ring-2 ring-offset-2 ring-offset-slate-950 shadow" 
               style={{ backgroundColor: color, '--tw-ring-color': color } as React.CSSProperties} 
             />
-            <span className="text-xs font-bold tracking-tight text-slate-200">{name}</span>
-            <span className="text-[9px] text-slate-400 border border-slate-800/60 rounded px-1 text-slate-500">{age} años</span>
-          </div>
+            <span className="text-xs font-bold tracking-tight">{name}</span>
+            <span className="text-[9px] text-slate-400 border border-slate-800/60 rounded px-1">{age} años</span>
+          </button>
 
           <button
             onClick={() => {
@@ -5149,6 +5321,521 @@ export default function AnonymousChatApp() {
                     </div>
                   </div>
 
+                </div>
+              </motion.div>
+
+            ) : activeTab === 'panel-streamer' ? (
+
+              // STATE 2.8: STREAMER PANEL & LIVE CAM BROADCAST
+              <motion.div
+                key="panel-streamer"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.4 }}
+                className="flex-1 flex flex-col h-full overflow-y-auto scrollbar-thin bg-slate-950 text-slate-100"
+              >
+                {/* Header */}
+                <div className="p-6 border-b border-slate-900 bg-gradient-to-r from-rose-950/20 via-slate-950 to-slate-950 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0">
+                  <div className="flex items-center gap-3.5">
+                    <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.15)]">
+                      <Tv className="w-6 h-6 animate-pulse" />
+                    </div>
+                    <div>
+                      <h2 className="text-base font-black uppercase tracking-wider text-white">
+                        Panel de Streamer
+                      </h2>
+                      <p className="text-[10px] text-slate-400 font-medium">
+                        Transmite tu cámara en vivo, interactúa con la comunidad y gana tokens por tu contenido.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono bg-rose-500/10 border border-rose-500/20 text-rose-400 px-3 py-1 rounded-full font-bold uppercase tracking-widest flex items-center gap-1.5">
+                      <span className={`w-2 h-2 rounded-full ${isStreaming ? 'bg-rose-500 animate-ping' : 'bg-slate-500'}`} />
+                      {isStreaming ? 'TRANSMITIENDO EN VIVO' : 'MODO OFF-LINE'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-4 md:p-6 space-y-6 max-w-6xl mx-auto w-full">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    {/* Left Panel: Stream & Setup */}
+                    <div className="lg:col-span-7 space-y-6">
+                      {/* Video Player Box */}
+                      <div className="bg-slate-900/30 border border-slate-900 rounded-3xl p-4 md:p-5 space-y-4 shadow-xl">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-xs font-black uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                            <Camera className="w-4 h-4 text-rose-400" />
+                            Vista de Cámara & Transmisión
+                          </h3>
+                          {isStreaming && (
+                            <div className="flex gap-2 text-[10px] font-mono">
+                              <span className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded">
+                                {Math.floor(streamDuration / 60)}m {streamDuration % 60}s
+                              </span>
+                              <span className="bg-fuchsia-500/10 border border-fuchsia-500/20 text-fuchsia-400 px-2 py-0.5 rounded flex items-center gap-1">
+                                <Users className="w-3 h-3" /> {streamViewers}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Webcam Video Target Box */}
+                        <div className="aspect-video bg-black rounded-2xl overflow-hidden relative border border-slate-800 shadow-inner flex items-center justify-center">
+                          {isStreaming ? (
+                            <video
+                              ref={setVideoElRef}
+                              autoPlay
+                              playsInline
+                              muted
+                              className="w-full h-full object-cover scale-x-[-1]"
+                            />
+                          ) : (
+                            <div className="text-center p-6 space-y-3">
+                              <div className="w-16 h-16 rounded-full bg-slate-900/80 border border-slate-800 flex items-center justify-center text-slate-500 mx-auto">
+                                <Tv className="w-8 h-8" />
+                              </div>
+                              <p className="text-xs font-bold text-slate-400">La transmisión está apagada</p>
+                              <p className="text-[10px] text-slate-500 max-w-[280px]">Configura tu show abajo y haz clic en &quot;Iniciar Transmisión&quot; para encender tu cámara.</p>
+                            </div>
+                          )}
+
+                          {isStreaming && (
+                            <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center bg-slate-950/80 backdrop-blur border border-slate-800 p-3 rounded-xl">
+                              <div>
+                                <h4 className="text-xs font-extrabold text-white truncate max-w-[200px]">{streamTitle}</h4>
+                                <p className="text-[9px] text-slate-400 uppercase tracking-wider font-semibold">{streamCategory} • {streamResolution}</p>
+                              </div>
+                              <div className="bg-rose-500/20 border border-rose-500/30 text-rose-400 font-mono text-[10px] font-extrabold px-2.5 py-1 rounded-lg">
+                                {streamTokens} TOKENS RECIBIDOS 💸
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Stream Controls / Configuration Form */}
+                        <div className="bg-slate-950/40 border border-slate-850 p-4 rounded-2xl space-y-4">
+                          <h4 className="text-[10px] font-black uppercase tracking-widest text-indigo-400 font-mono">
+                            ⚙️ CONFIGURACIÓN DE TU SHOW EN VIVO
+                          </h4>
+
+                          <div className="space-y-3">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-slate-400 block">Título de la Transmisión</label>
+                                <input
+                                  type="text"
+                                  disabled={isStreaming}
+                                  value={streamTitle}
+                                  onChange={(e) => setStreamTitle(e.target.value)}
+                                  placeholder="Ej. Bailando y conversando con la comunidad 🔥"
+                                  className="w-full bg-slate-950 border border-slate-850 rounded-xl py-2.5 px-3.5 text-xs text-slate-200 focus:outline-none focus:border-rose-500 transition-colors disabled:opacity-50"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-slate-400 block">Categoría de Contenido</label>
+                                <select
+                                  disabled={isStreaming}
+                                  value={streamCategory}
+                                  onChange={(e) => setStreamCategory(e.target.value)}
+                                  className="w-full bg-slate-950 border border-slate-850 rounded-xl py-2.5 px-3.5 text-xs text-slate-200 focus:outline-none focus:border-rose-500 transition-colors disabled:opacity-50"
+                                >
+                                  <option value="Amateur">Amateur</option>
+                                  <option value="Latina">Latina</option>
+                                  <option value="Conversación">Solo Conversación</option>
+                                  <option value="Parejas">Parejas en Vivo</option>
+                                  <option value="VIP">Privado Exclusivo</option>
+                                </select>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-slate-400 block">Nivel de Acceso</label>
+                                <select
+                                  disabled={isStreaming}
+                                  value={streamAccess}
+                                  onChange={(e) => setStreamAccess(e.target.value)}
+                                  className="w-full bg-slate-950 border border-slate-850 rounded-xl py-2.5 px-3.5 text-xs text-slate-200 focus:outline-none focus:border-rose-500 transition-colors disabled:opacity-50"
+                                >
+                                  <option value="Público">Público (Gratis para ver)</option>
+                                  <option value="Pago por Minuto">Pago por Minuto (Fijar precio)</option>
+                                  <option value="VIP Privado">Exclusivo VIP (Solo invitados)</option>
+                                </select>
+                              </div>
+
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-slate-400 block">Precio (Tokens por minuto)</label>
+                                <input
+                                  type="number"
+                                  disabled={isStreaming || streamAccess === 'Público'}
+                                  value={streamPrice}
+                                  onChange={(e) => setStreamPrice(parseInt(e.target.value) || 0)}
+                                  placeholder="Tokens"
+                                  className="w-full bg-slate-950 border border-slate-850 rounded-xl py-2.5 px-3.5 text-xs text-slate-200 focus:outline-none focus:border-rose-500 transition-colors disabled:opacity-50"
+                                />
+                              </div>
+
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-slate-400 block">Calidad Máxima</label>
+                                <select
+                                  disabled={isStreaming}
+                                  value={streamResolution}
+                                  onChange={(e) => setStreamResolution(e.target.value)}
+                                  className="w-full bg-slate-950 border border-slate-850 rounded-xl py-2.5 px-3.5 text-xs text-slate-200 focus:outline-none focus:border-rose-500 transition-colors disabled:opacity-50"
+                                >
+                                  <option value="1080p">1080p Full HD (60 FPS)</option>
+                                  <option value="720p">720p HD (Estándar)</option>
+                                  <option value="4K">4K UHD (Ultra Prioridad)</option>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="pt-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsStreaming(!isStreaming);
+                                playInteractionMode(isStreaming ? 'select' : 'click');
+                                setCallRejectedNotification(isStreaming ? 'Transmisión apagada con éxito. 👋' : '¡Cámara encendida! Transmisión en vivo iniciada de forma segura. 🎥💥');
+                                setTimeout(() => setCallRejectedNotification(null), 3000);
+                              }}
+                              className={`w-full py-4.5 font-black uppercase tracking-wider text-xs rounded-2xl cursor-pointer transition-all flex items-center justify-center gap-2 ${
+                                isStreaming
+                                  ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/20'
+                                  : 'bg-gradient-to-r from-rose-500 to-indigo-600 hover:from-rose-400 hover:to-indigo-500 text-white shadow-lg shadow-rose-500/10'
+                              }`}
+                            >
+                              {isStreaming ? (
+                                <>
+                                  <VideoOff className="w-5 h-5" />
+                                  <span>Apagar Transmisión / Detener Cámara 🛑</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Video className="w-5 h-5 animate-pulse" />
+                                  <span>Iniciar Transmisión en Vivo Ahora 🎥🚀</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
+
+                    {/* Right Panel: Chat Room Sim & Tips */}
+                    <div className="lg:col-span-5 space-y-6">
+                      {/* Live Chat Box */}
+                      <div className="bg-slate-900/30 border border-slate-900 rounded-3xl p-4 md:p-5 flex flex-col h-[520px] shadow-xl">
+                        <div className="flex items-center justify-between border-b border-slate-900 pb-3 shrink-0">
+                          <div className="flex items-center gap-2">
+                            <MessageSquare className="w-4 h-4 text-indigo-400" />
+                            <h4 className="text-xs font-black uppercase tracking-wider text-slate-300">
+                              Chat en Vivo de Tu Sala
+                            </h4>
+                          </div>
+                          <span className="text-[9px] font-mono bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded-full font-bold">
+                            {isStreaming ? `${streamViewers} ESPECTADORES` : 'SIN CONEXIÓN'}
+                          </span>
+                        </div>
+
+                        {/* Chat messages stream */}
+                        <div className="flex-1 overflow-y-auto scrollbar-thin py-3 space-y-2.5">
+                          {isStreaming ? (
+                            streamMessages.map((msg) => (
+                              <div
+                                key={msg.id}
+                                className={`p-2.5 rounded-xl border text-xs transition-all ${
+                                  msg.system
+                                    ? 'bg-slate-950/80 border-slate-900 text-indigo-400 italic font-medium'
+                                    : msg.gift
+                                    ? 'bg-amber-500/10 border-amber-500/20 text-amber-400 font-extrabold shadow-sm'
+                                    : 'bg-slate-900/50 border-transparent hover:bg-slate-900/75 text-slate-300'
+                                }`}
+                              >
+                                <div className="flex items-center justify-between gap-1.5 mb-1">
+                                  <span className={`font-black ${msg.system ? 'text-indigo-400' : 'text-slate-200'}`}>
+                                    {msg.system ? msg.sender : `@${msg.sender}`}
+                                  </span>
+                                  <span className="text-[9px] text-slate-600 font-medium font-mono">{msg.time}</span>
+                                </div>
+                                <p className="leading-relaxed">{msg.text}</p>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="h-full flex items-center justify-center text-center p-6 text-slate-600">
+                              <p className="text-[10px] leading-relaxed">
+                                Cuando inicies tu transmisión en vivo, aquí aparecerá el chat interactivo, los mensajes de los usuarios y las notificaciones de regalos en tiempo real.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Income Tips list */}
+                        <div className="border-t border-slate-900 pt-3 shrink-0 space-y-2">
+                          <h5 className="text-[9px] font-black tracking-wider uppercase text-slate-500">Historial de Propinas & Tokens</h5>
+                          <div className="h-20 overflow-y-auto scrollbar-none space-y-1.5">
+                            {isStreaming ? (
+                              streamMessages.filter(m => m.gift).length > 0 ? (
+                                streamMessages.filter(m => m.gift).map((msg, i) => (
+                                  <div key={i} className="flex justify-between items-center text-[10px] bg-amber-500/5 border border-amber-500/10 p-1.5 rounded-lg text-amber-400">
+                                    <span className="font-bold">@{msg.sender}</span>
+                                    <span className="font-mono font-black">💸 Envío Regalo</span>
+                                  </div>
+                                ))
+                              ) : (
+                                <p className="text-[9px] text-slate-600 text-center italic py-4">Esperando las primeras propinas de la comunidad...</p>
+                              )
+                            ) : (
+                              <p className="text-[9px] text-slate-600 text-center italic py-4">Inicia sesión y transmite para recibir tokens.</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+            ) : activeTab === 'perfil-usuario' ? (
+
+              // STATE 2.9: USER PROFILE & TOKENS WALLET CARD
+              <motion.div
+                key="perfil-usuario"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.4 }}
+                className="flex-1 flex flex-col h-full overflow-y-auto scrollbar-thin bg-slate-950 text-slate-100"
+              >
+                {/* Header */}
+                <div className="p-6 border-b border-slate-900 bg-gradient-to-r from-indigo-950/20 via-slate-950 to-slate-950 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0">
+                  <div className="flex items-center gap-3.5">
+                    <div className="p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.15)]">
+                      <CreditCard className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h2 className="text-base font-black uppercase tracking-wider text-white">
+                        Mi Perfil & Billetera de Tokens
+                      </h2>
+                      <p className="text-[10px] text-slate-400 font-medium">
+                        Gestiona tu información pública, compra tokens y revisa tus salas y chats completados.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 px-3.5 py-1 rounded-full font-bold uppercase tracking-widest">
+                      BILLETERA SECURED 🔒
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-4 md:p-6 space-y-6 max-w-6xl mx-auto w-full">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    {/* Left Column: User Public Info Card */}
+                    <div className="lg:col-span-5 space-y-6">
+                      <div className="bg-slate-900/30 border border-slate-900 rounded-3xl p-5 md:p-6 space-y-5 shadow-xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl pointer-events-none" />
+
+                        {/* Top layout */}
+                        <div className="flex items-center gap-4 border-b border-slate-900 pb-5">
+                          <div 
+                            className="w-14 h-14 rounded-full border-2 border-slate-800 flex items-center justify-center text-xl font-mono font-black"
+                            style={{ backgroundColor: color, color: '#000' }}
+                          >
+                            {name?.substring(0, 2).toUpperCase() || 'US'}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-sm font-black text-white">{name}</h3>
+                              <span className="text-[8px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded-md font-bold uppercase">Activo</span>
+                            </div>
+                            <p className="text-[10px] text-slate-400 mt-0.5">{age} años • {profileLocation}</p>
+                          </div>
+                        </div>
+
+                        {/* Badges and tags */}
+                        <div className="space-y-2">
+                          <h4 className="text-[9px] font-black tracking-widest text-slate-500 uppercase">Medallas de la Cuenta</h4>
+                          <div className="flex flex-wrap gap-1.5">
+                            <span className="text-[9px] bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 px-2.5 py-1 rounded-lg font-bold">
+                              🚀 Pionero de la Comunidad
+                            </span>
+                            <span className="text-[9px] bg-rose-500/10 border border-rose-500/20 text-rose-400 px-2.5 py-1 rounded-lg font-bold">
+                              💎 Colaborador VIP
+                            </span>
+                            <span className="text-[9px] bg-amber-500/10 border border-amber-500/20 text-amber-400 px-2.5 py-1 rounded-lg font-bold">
+                              🔥 Súper Fan Activo
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Profile Biography Editor */}
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-black text-slate-500 block uppercase tracking-wider">Biografía Pública</label>
+                          <textarea
+                            value={profileBio}
+                            onChange={(e) => setProfileBio(e.target.value)}
+                            rows={4}
+                            className="w-full bg-slate-950 border border-slate-850 rounded-2xl p-3.5 text-xs text-white focus:border-indigo-500/40 outline-none transition-all placeholder:text-slate-600 font-medium resize-none leading-relaxed"
+                          />
+                        </div>
+
+                        {/* Stats grid */}
+                        <div className="grid grid-cols-3 gap-3 pt-2">
+                          <div className="bg-slate-950/50 border border-slate-850 p-3 rounded-2xl text-center">
+                            <p className="text-xs font-black text-indigo-400 font-mono">12</p>
+                            <p className="text-[8px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">Salas</p>
+                          </div>
+                          <div className="bg-slate-950/50 border border-slate-850 p-3 rounded-2xl text-center">
+                            <p className="text-xs font-black text-rose-400 font-mono">4</p>
+                            <p className="text-[8px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">Llamadas</p>
+                          </div>
+                          <div className="bg-slate-950/50 border border-slate-850 p-3 rounded-2xl text-center">
+                            <p className="text-xs font-black text-emerald-400 font-mono">148</p>
+                            <p className="text-[8px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">Mensajes</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right Column: Recharging Wallet & Coins Box */}
+                    <div className="lg:col-span-7 space-y-6">
+                      <div className="bg-slate-900/30 border border-slate-900 rounded-3xl p-5 md:p-6 space-y-6 shadow-xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+
+                        {/* Virtual Card Presentation */}
+                        <div className="bg-gradient-to-br from-indigo-900/80 via-slate-900 to-emerald-950/80 border border-indigo-500/20 p-6 rounded-3xl relative overflow-hidden shadow-2xl space-y-8 select-none">
+                          <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
+                          
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <p className="text-[8px] font-mono tracking-widest text-emerald-400 uppercase font-black">PLATAFORMA CHAT PRIVADA</p>
+                              <h4 className="text-sm font-black tracking-tight text-white mt-1">BILLETERA COIN-PAY</h4>
+                            </div>
+                            <div className="w-10 h-7 rounded bg-amber-500/20 border border-amber-500/40 relative flex items-center justify-center text-[10px] text-amber-300 font-extrabold shadow">
+                              CHIP
+                            </div>
+                          </div>
+
+                          <div>
+                            <p className="text-[9px] font-mono text-slate-400 uppercase tracking-widest">Saldo Disponible</p>
+                            <div className="flex items-baseline gap-2 mt-1">
+                              <span className="text-2xl font-mono font-black text-white">{profileWalletBalance}</span>
+                              <span className="text-xs font-extrabold text-emerald-400">TOKENS 💸</span>
+                            </div>
+                          </div>
+
+                          <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 pt-2 border-t border-slate-800/40">
+                            <div>
+                              <span className="block text-[8px] uppercase tracking-wider text-slate-500 font-bold">Propietario</span>
+                              <span className="font-extrabold text-slate-200 uppercase">{name || 'Usuario Lobby'}</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="block text-[8px] uppercase tracking-wider text-slate-500 font-bold">Estado</span>
+                              <span className="font-extrabold text-emerald-400">CONECTADO</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Recharge Bundles Grid */}
+                        <div className="space-y-4">
+                          <h4 className="text-[10px] font-black tracking-widest text-indigo-400 uppercase font-mono">
+                            💎 SELECCIONA UN PAQUETE PARA RECARGAR TOKENS
+                          </h4>
+
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {[
+                              { id: 'b1', tokens: 100, price: '9.99', desc: 'Paquete Básico para chats casuales', popular: false },
+                              { id: 'b2', tokens: 500, price: '39.99', desc: 'Súper Pack para videollamadas y shows VIP', popular: true },
+                              { id: 'b3', tokens: 2000, price: '129.99', desc: 'Ballena VIP de la sala (Máxima Prioridad)', popular: false }
+                            ].map((bundle) => (
+                              <div
+                                key={bundle.id}
+                                onClick={() => setPurchaseAmount(bundle.tokens)}
+                                className={`p-4 border rounded-2xl cursor-pointer transition-all relative flex flex-col justify-between space-y-3 ${
+                                  purchaseAmount === bundle.tokens
+                                    ? 'bg-emerald-500/10 border-emerald-500 shadow-md shadow-emerald-500/5'
+                                    : bundle.popular
+                                    ? 'bg-slate-900/80 border-indigo-500/30 hover:border-indigo-500'
+                                    : 'bg-slate-900/40 border-slate-850 hover:bg-slate-900/60 hover:border-slate-800'
+                                }`}
+                              >
+                                {bundle.popular && (
+                                  <span className="absolute -top-2.5 left-4 bg-indigo-600 text-[8px] font-black uppercase text-white px-2.5 py-0.5 rounded-full tracking-wider border border-indigo-500/50">
+                                    MÁS POPULAR ⭐
+                                  </span>
+                                )}
+
+                                <div className="space-y-1">
+                                  <div className="flex items-baseline gap-1">
+                                    <span className="text-xl font-mono font-black text-white">{bundle.tokens}</span>
+                                    <span className="text-[9px] font-extrabold text-emerald-400 uppercase">Tokens</span>
+                                  </div>
+                                  <p className="text-[9px] text-slate-500 leading-normal">{bundle.desc}</p>
+                                </div>
+
+                                <div className="pt-2 border-t border-slate-900 flex items-center justify-between">
+                                  <span className="text-xs font-mono font-black text-indigo-400">${bundle.price} USD</span>
+                                  <button className={`py-1 px-2.5 rounded-lg text-[9px] font-extrabold transition-all ${
+                                    purchaseAmount === bundle.tokens
+                                      ? 'bg-emerald-600 text-white'
+                                      : 'bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 border border-indigo-500/20'
+                                  }`}>
+                                    Elegir
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Interactive Simulated Payment Panel */}
+                        {purchaseAmount && (
+                          <div className="bg-slate-950/60 border border-slate-850 p-5 rounded-2xl space-y-4 animate-fadeIn">
+                            <div className="flex justify-between items-center pb-2 border-b border-slate-900">
+                              <span className="text-[10px] font-black uppercase tracking-wider text-slate-300">Resumen del Pago Simulado</span>
+                              <button onClick={() => setPurchaseAmount(null)} className="text-slate-500 hover:text-slate-300 text-xs font-bold">Cancelar ✖</button>
+                            </div>
+                            
+                            <div className="flex justify-between items-center text-xs">
+                              <span className="text-slate-400">Recarga de <strong className="text-white">{purchaseAmount} Tokens</strong></span>
+                              <span className="font-mono font-black text-indigo-400">Total: ${purchaseAmount === 100 ? '9.99' : (purchaseAmount === 500 ? '39.99' : '129.99')} USD</span>
+                            </div>
+
+                            <p className="text-[9px] text-slate-500 leading-relaxed font-medium">
+                              ⚠️ Esta es una simulación de compra para la versión de demostración. No se realizará ningún cargo real en tu tarjeta de crédito o billetera.
+                            </p>
+
+                            <button
+                              onClick={() => {
+                                setProfileWalletBalance(prev => prev + purchaseAmount);
+                                setPurchaseAmount(null);
+                                setShowRechargeSuccess(true);
+                                playInteractionMode('click');
+                                setTimeout(() => setShowRechargeSuccess(false), 5000);
+                              }}
+                              className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-1.5"
+                            >
+                              Confirmar Pago & Acreditar Sabor Simulado 🚀💰
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Recharge Success Notification Box */}
+                        {showRechargeSuccess && (
+                          <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl text-center space-y-2 animate-bounce">
+                            <h5 className="text-xs font-black text-emerald-400 uppercase tracking-widest">¡Pago Simulado Acreditado con Éxito! 🎉💸</h5>
+                            <p className="text-[10px] text-slate-400">Los tokens se han depositado directamente en tu billetera. ¡Disfruta de tus salas y llamadas VIP de inmediato!</p>
+                          </div>
+                        )}
+
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
 
