@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Video,
@@ -879,7 +880,7 @@ export default function AnonymousChatApp() {
       if (streamTimerRef.current) clearInterval(streamTimerRef.current);
       if (streamSimTimerRef.current) clearInterval(streamSimTimerRef.current);
     };
-  }, [isStreaming]);
+  }, [isStreaming, localStream]);
 
   const handleOpenViewOnceMessage = (messageId: string) => {
     fetch('/api/chat', {
